@@ -14,3 +14,6 @@ The Tech Stack : I wanted to challenge my core engineering fundamentals, so I in
 🔹 Backend: Written entirely in Core Java. Instead of Spring Boot, I built a custom RESTful API server from scratch using HttpServer. I even implemented custom Data Structures (Linked Lists, Stacks, Queues) to handle memory and logic under the hood. 
  Database: MySQL handles the complex relational mapping of students, teachers, sections, and randomized question banks via JDBC. 🔹Frontend: The responsive UI is built with purely HTML, CSS, and Vanilla JavaScript. 
 🔹 Connectivity: The frontend communicates asynchronously with the custom Java API server using the native JS Fetch API, resulting in a lightning-fast, seamless experience.
+
+HOW TO RUN THE PROJECT:
+open xammp and start Apache and my sql the open the demo folder's cmd and type run.bat then go to browser and write localhost and your folder name , make sure the project is kept in htdocs of xammp then click on project 1.2 then web and explore the project , Thankyou!

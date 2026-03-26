@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Examination System</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <script>
+        // Quick client-side guard: if user isn't a logged-in admin, redirect to main login
+        (function(){
+            try {
+                var role = localStorage.getItem('role');
+                if (!role || role !== 'ADMIN') {
+                    window.location.href = 'index.html';
+                }
+            } catch (e) {
+                try { window.location.href = 'index.html'; } catch(e){}
+            }
+        })();
+    </script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Admin Panel</h2>
+                <p id="adminName" class="admin-name"></p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    <!-- Dashboard -->
+                    <li><a href="#" onclick="showSection('dashboard', event)" class="nav-link active">📊 Dashboard</a></li>
+
+                    <!-- Teachers Management -->
+                    <li class="nav-section">
+                        <a href="#" onclick="toggleSubmenu('teachers', event)" class="nav-link">👨‍🏫 Manage Teachers</a>
+                        <ul id="teachers-submenu" class="submenu">
+                            <li><a href="#" onclick="showSection('teacher-profile', event)" class="nav-link">👤 View Teacher Profile</a></li>
+                            <li><a href="#" onclick="showSection('teacher-edit', event)" class="nav-link">✏️ Edit Teacher Profile</a></li>
+                            <li><a href="#" onclick="showSection('teacher-add', event)" class="nav-link">➕ Add New Teacher</a></li>
+                            <li><a href="#" onclick="showSection('teacher-remove', event)" class="nav-link">🗑️ Remove Teacher</a></li>
+                            <li><a href="#" onclick="showSection('teacher-assign-section', event)" class="nav-link">🏢 Assign Section</a></li>
+                            <li><a href="#" onclick="showSection('teacher-assign-subject', event)" class="nav-link">📚 Assign Subject</a></li>
+                            <li><a href="#" onclick="showSection('teacher-view-all', event)" class="nav-link">👥 View All Teachers</a></li>
+                            <li><a href="#" onclick="showSection('teacher-view-individual', event)" class="nav-link">🔍 View Individual Details</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Students Management -->
+                    <li class="nav-section">
+                        <a href="#" onclick="toggleSubmenu('students', event)" class="nav-link">👨‍🎓 Manage Students</a>
+                        <ul id="students-submenu" class="submenu">
+                            <li><a href="#" onclick="showSection('student-profile', event)" class="nav-link">👤 View Student Profile</a></li>
+                            <li><a href="#" onclick="showSection('student-edit', event)" class="nav-link">✏️ Edit Student Profile</a></li>
+                            <li><a href="#" onclick="showSection('student-add', event)" class="nav-link">➕ Add New Student</a></li>
+                            <li><a href="#" onclick="showSection('student-remove', event)" class="nav-link">🗑️ Remove Student</a></li>
+                            <li><a href="#" onclick="showSection('student-view-all', event)" class="nav-link">👥 View All Students</a></li>
+                            <li><a href="#" onclick="showSection('student-view-individual', event)" class="nav-link">🔍 View Individual Details</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Sections Management -->
+                    <li><a href="#" onclick="showSection('sections', event)" class="nav-link">🏢 Manage Sections</a></li>
+
+                    <!-- Subjects Management -->
+                    <li><a href="#" onclick="showSection('subjects', event)" class="nav-link">📚 Manage Subjects</a></li>
+
+                    <!-- Logout -->
+                    <li><a href="#" onclick="logout(event)" class="nav-link logout">🚪 Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section active">
+                <h2>📊 Dashboard Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Teachers</h3>
+                        <p id="teacherCount" class="stat-number">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Students</h3>
+                        <p id="studentCount" class="stat-number">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Sections</h3>
+                        <p id="sectionCount" class="stat-number">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Subjects</h3>
+                        <p id="subjectCount" class="stat-number">0</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============ TEACHERS SECTIONS ============ -->
+
+            <!-- Teacher Profile View -->
+            <section id="teacher-profile" class="content-section">
+                <h2>👤 View Teacher Profile</h2>
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="viewTeacherId">Enter Teacher ID:</label>
+                        <input type="number" id="viewTeacherId" placeholder="Teacher ID" required>
+                        <button class="btn btn-primary" onclick="viewTeacherProfile()">Search</button>
+                    </div>
+                    <div id="teacherProfileInfo" class="profile-info" style="display:none; margin-top: 20px;"></div>
+                </div>
+            </section>
+
+            <!-- Teacher Profile Edit -->
+            <section id="teacher-edit" class="content-section">
+                <h2>✏️ Edit Teacher Profile</h2>
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="editTeacherId">Teacher ID:</label>
+                        <input type="number" id="editTeacherId" placeholder="Teacher ID" required>
+                        <button class="btn btn-secondary" onclick="loadTeacherForEdit()">Load Teacher</button>
+                    </div>
+                    <form id="editTeacherForm" style="display:none; margin-top: 20px;">
+                        <div class="form-group">
+                            <label for="editTeacherName">Name:</label>
+                            <input type="text" id="editTeacherName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editTeacherEmail">Email:</label>
+                            <input type="email" id="editTeacherEmail" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Add Teacher -->
+            <section id="teacher-add" class="content-section">
+                <h2>➕ Add New Teacher</h2>
+                <div class="form-container">
+                    <form id="addTeacherForm">
+                        <div class="form-group">
+                            <label for="newTeacherId">Teacher ID:</label>
+                            <input type="number" id="newTeacherId" placeholder="Teacher ID" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newTeacherName">Full Name:</label>
+                            <input type="text" id="newTeacherName" placeholder="Full Name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newTeacherEmail">Email Address:</label>
+                            <input type="email" id="newTeacherEmail" placeholder="Email Address" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newTeacherPassword">Password:</label>
+                            <input type="password" id="newTeacherPassword" placeholder="Password" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">✓ Add Teacher</button>
+                    </form>
+                    <div id="addTeacherMessage" class="message"></div>
+                </div>
+            </section>
+
+            <!-- Remove Teacher -->
+            <section id="teacher-remove" class="content-section">
+                <h2>🗑️ Remove Teacher</h2>
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="removeTeacherId">Enter Teacher ID to Remove:</label>
+                        <input type="number" id="removeTeacherId" placeholder="Teacher ID" required>
+                    </div>
+                    <button class="btn btn-danger" onclick="removeTeacher()">✕ Remove Teacher</button>
+                    <div id="removeTeacherMessage" class="message"></div>
+                </div>
+            </section>
+
+            <!-- Assign Section to Teacher -->
+            <section id="teacher-assign-section" class="content-section">
+                <h2>🏢 Assign Section to Teacher</h2>
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="assignTeacherId">Select Teacher:</label>
+                        <select id="assignTeacherId" required>
+                            <option value="">-- Select Teacher --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="assignSectionId">Select Section:</label>
+                        <select id="assignSectionId" required>
+                            <option value="">-- Select Section --</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-success" onclick="assignSectionToTeacher()">✓ Assign Section</button>
+                    <button class="btn btn-danger" style="margin-left: 10px;" onclick="removeSectionFromTeacher()">✕ Remove Section</button>
+                    <div id="assignSectionMessage" class="message"></div>
+                </div>
+            </section>
+
+            <!-- Assign Subject to Teacher -->
+            <section id="teacher-assign-subject" class="content-section">
+                <h2>📚 Assign Subject to Teacher</h2>
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="assignSubjectTeacherId">Select Teacher:</label>
+                        <select id="assignSubjectTeacherId" required>
+                            <option value="">-- Select Teacher --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="assignSubjectId">Select Subject:</label>
+                        <select id="assignSubjectId" required>
+                            <option value="">-- Select Subject --</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-success" onclick="assignSubjectToTeacher()">✓ Assign Subject</button>
+                    <button class="btn btn-danger" style="margin-left: 10px;" onclick="removeSubjectFromTeacher()">✕ Remove Subject</button>
+                    <div id="assignSubjectMessage" class="message"></div>
+                </div>
+            </section>
+
+            <!-- View All Teachers -->
+            <section id="teacher-view-all" class="content-section">
+                <h2>👥 View All Teachers</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allTeacherTable">
+                        <tr><td colspan="3">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- View Individual Teacher Details -->
+            <section id="teacher-view-individual" class="content-section">
+                <h2>🔍 View Individual Teacher Details</h2>
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="searchTeacherId">Enter Teacher ID:</label>
+                        <input type="number" id="searchTeacherId" placeholder="Teacher ID" required>
+                        <button class="btn btn-primary" onclick="viewIndividualTeacherDetails()">Search</button>
+                    </div>
+                </div>
+                <div id="individualTeacherDetails" class="profile-info" style="display:none; margin-top: 20px;"></div>
+            </section>
+
+            <!-- ============ STUDENTS SECTIONS ============ -->
+
+            <!-- Student Profile View -->
+            <section id="student-profile" class="content-section">
+                <h2>👤 View Student Profile</h2>
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="viewStudentId">Enter Student ID:</label>
+                        <input type="number" id="viewStudentId" placeholder="Student ID" required>
+                        <button class="btn btn-primary" onclick="viewStudentProfile()">Search</button>
+                    </div>
+                    <div id="studentProfileInfo" class="profile-info" style="display:none; margin-top: 20px;"></div>
+                </div>
+            </section>
+
+            <!-- Student Profile Edit -->
+            <section id="student-edit" class="content-section">
+                <h2>✏️ Edit Student Profile</h2>
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="editStudentId">Student ID:</label>
+                        <input type="number" id="editStudentId" placeholder="Student ID" required>
+                        <button class="btn btn-secondary" onclick="loadStudentForEdit()">Load Student</button>
+                    </div>
+                    <form id="editStudentForm" style="display:none; margin-top: 20px;">
+                        <div class="form-group">
+                            <label for="editStudentName">Name:</label>
+                            <input type="text" id="editStudentName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editStudentEmail">Email:</label>
+                            <input type="email" id="editStudentEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editStudentRoll">Roll Number:</label>
+                            <input type="text" id="editStudentRoll" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Add Student -->
+            <section id="student-add" class="content-section">
+                <h2>➕ Add New Student</h2>
+                <div class="form-container">
+                    <form id="addStudentForm">
+                        <div class="form-group">
+                            <label for="newStudentId">Student ID:</label>
+                            <input type="number" id="newStudentId" placeholder="Student ID" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newStudentName">Full Name:</label>
+                            <input type="text" id="newStudentName" placeholder="Full Name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newStudentRoll">Roll Number:</label>
+                            <input type="text" id="newStudentRoll" placeholder="Roll Number" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newStudentEmail">Email Address:</label>
+                            <input type="email" id="newStudentEmail" placeholder="Email Address" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newStudentPassword">Password:</label>
+                            <input type="password" id="newStudentPassword" placeholder="Password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newStudentSection">Section (Optional):</label>
+                            <select id="newStudentSection">
+                                <option value="">-- Select Section --</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success">✓ Add Student</button>
+                    </form>
+                    <div id="addStudentMessage" class="message"></div>
+                </div>
+            </section>
+
+            <!-- Remove Student -->
+            <section id="student-remove" class="content-section">
+                <h2>🗑️ Remove Student</h2>
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="removeStudentId">Enter Student ID to Remove:</label>
+                        <input type="number" id="removeStudentId" placeholder="Student ID" required>
+                    </div>
+                    <button class="btn btn-danger" onclick="removeStudent()">✕ Remove Student</button>
+                    <div id="removeStudentMessage" class="message"></div>
+                </div>
+            </section>
+
+            <!-- View All Students -->
+            <section id="student-view-all" class="content-section">
+                <h2>👥 View All Students</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Roll No</th>
+                            <th>Email</th>
+                            <th>Section</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allStudentTable">
+                        <tr><td colspan="5">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- View Individual Student Details -->
+            <section id="student-view-individual" class="content-section">
+                <h2>🔍 View Individual Student Details</h2>
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="searchStudentId">Enter Student ID:</label>
+                        <input type="number" id="searchStudentId" placeholder="Student ID" required>
+                        <button class="btn btn-primary" onclick="viewIndividualStudentDetails()">Search</button>
+                    </div>
+                </div>
+                <div id="individualStudentDetails" class="profile-info" style="display:none; margin-top: 20px;"></div>
+            </section>
+
+            <!-- ============ SECTIONS & SUBJECTS ============ -->
+
+            <!-- Sections Management -->
+            <section id="sections" class="content-section">
+                <h2>🏢 Manage Sections</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Course</th>
+                            <th>Strength</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sectionTable">
+                        <tr><td colspan="4">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Subjects Management -->
+            <section id="subjects" class="content-section">
+                <h2>📚 Manage Subjects</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Subject Name</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subjectTable">
+                        <tr><td colspan="2">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

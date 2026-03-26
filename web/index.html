@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examination System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <h1>Examination System</h1>
+            <p class="subtitle">Examination & Assessment Platform</p>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="role">Login As:</label>
+                    <select id="role" name="role" required>
+                        <option value="">Select your role</option>
+                        <option value="ADMIN">Administrator</option>
+                        <option value="TEACHER">Teacher</option>
+                        <option value="STUDENT">Student</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" placeholder="Enter your name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+
+                <button type="submit" class="btn-login">Login</button>
+                <p id="errorMsg" class="error"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard Modal -->
+    <div id="adminDashboard" class="dashboard hidden">
+        <div class="sidebar">
+            <h2>Admin Panel</h2>
+            <nav class="menu">
+                <button class="menu-btn active" onclick="showAdminSection('overview')">Dashboard</button>
+                <button class="menu-btn" onclick="showAdminSection('teachers')">Manage Teachers</button>
+                <button class="menu-btn" onclick="showAdminSection('students')">Manage Students</button>
+                <button class="menu-btn" onclick="showAdminSection('sections')">Manage Sections</button>
+                <button class="menu-btn" onclick="showAdminSection('subjects')">Manage Subjects</button>
+                <button class="menu-btn logout" onclick="logout()">Logout</button>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <!-- Dashboard Overview -->
+            <div id="overview" class="section active">
+                <h2>Dashboard Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Teachers</h3>
+                        <p id="teacherCount" class="stat-number">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Students</h3>
+                        <p id="studentCount" class="stat-number">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Sections</h3>
+                        <p id="sectionCount" class="stat-number">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Subjects</h3>
+                        <p id="subjectCount" class="stat-number">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teachers Section -->
+            <div id="teachers" class="section">
+                <h2>Manage Teachers</h2>
+                
+                <!-- Add Teacher Form -->
+                <div class="admin-form-card">
+                    <h4>➕ Add New Teacher</h4>
+                    <div class="admin-form-row">
+                        <input type="number" id="addTeacherId" placeholder="Teacher ID" required>
+                        <input type="text" id="addTeacherName" placeholder="Full Name" required>
+                        <input type="email" id="addTeacherEmail" placeholder="Email Address" required>
+                        <input type="password" id="addTeacherPassword" placeholder="Password" required>
+                    </div>
+                    <div class="admin-form-buttons">
+                        <button class="btn btn-success" id="addTeacherBtn">✓ Add Teacher</button>
+                    </div>
+                </div>
+
+                <!-- Remove Teacher Form -->
+                <div class="admin-form-card">
+                    <h4>🗑️ Remove Teacher</h4>
+                    <div class="admin-form-row">
+                        <input type="number" id="removeTeacherId" placeholder="Enter Teacher ID" required>
+                    </div>
+                    <div class="admin-form-buttons">
+                        <button class="btn btn-danger" id="removeTeacherBtn">✕ Remove Teacher</button>
+                    </div>
+                </div>
+
+                <!-- Assign Subject Form -->
+                <div class="admin-form-card">
+                    <h4>📚 Assign / Remove Subject</h4>
+                    <div class="admin-form-row">
+                        <select id="adminTeacherSelect" required>
+                            <option value="">-- Select Teacher --</option>
+                        </select>
+                        <select id="adminSubjectSelect" required>
+                            <option value="">-- Select Subject --</option>
+                        </select>
+                    </div>
+                    <div class="admin-form-buttons">
+                        <button class="btn btn-success" id="assignSubjectBtn">✓ Assign Subject</button>
+                        <button class="btn btn-danger" id="removeSubjectBtn">✕ Remove Subject</button>
+                    </div>
+                </div>
+
+                <!-- Assign Section Form -->
+                <div class="admin-form-card">
+                    <h4>🏢 Assign / Remove Section</h4>
+                    <div class="admin-form-row">
+                        <select id="adminTeacherSelect2" required>
+                            <option value="">-- Select Teacher --</option>
+                        </select>
+                        <select id="adminSectionSelect" required>
+                            <option value="">-- Select Section --</option>
+                        </select>
+                    </div>
+                    <div class="admin-form-buttons">
+                        <button class="btn btn-success" id="assignSectionBtn">✓ Assign Section</button>
+                        <button class="btn btn-danger" id="removeSectionBtn">✕ Remove Section</button>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 40px; margin-bottom: 20px;">👥 Teachers List</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teacherTable">
+                        <tr><td colspan="3">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Students Section -->
+            <div id="students" class="section">
+                <h2>Manage Students</h2>
+                
+                <!-- Add Student Form -->
+                <div class="admin-form-card">
+                    <h4>➕ Add New Student</h4>
+                    <div class="admin-form-row">
+                        <input type="number" id="addStudentId" placeholder="Student ID" required>
+                        <input type="text" id="addStudentName" placeholder="Full Name" required>
+                        <input type="text" id="addStudentRoll" placeholder="Roll Number" required>
+                    </div>
+                    <div class="admin-form-row">
+                        <input type="email" id="addStudentEmail" placeholder="Email Address" required>
+                        <input type="password" id="addStudentPassword" placeholder="Password" required>
+                        <select id="addStudentSection">
+                            <option value="">-- Section (optional) --</option>
+                        </select>
+                    </div>
+                    <div class="admin-form-buttons">
+                        <button class="btn btn-success" id="addStudentBtn">✓ Add Student</button>
+                    </div>
+                </div>
+
+                <!-- Remove Student Form -->
+                <div class="admin-form-card">
+                    <h4>🗑️ Remove Student</h4>
+                    <div class="admin-form-row">
+                        <input type="number" id="removeStudentId" placeholder="Enter Student ID" required>
+                    </div>
+                    <div class="admin-form-buttons">
+                        <button class="btn btn-danger" id="removeStudentBtn">✕ Remove Student</button>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 40px; margin-bottom: 20px;">👨‍🎓 Students List</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Roll No</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTable">
+                        <tr><td colspan="4">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Sections Section -->
+            <div id="sections" class="section">
+                <h2>Manage Sections</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Course</th>
+                            <th>Strength</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sectionTable">
+                        <tr><td colspan="4">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Subjects Section -->
+            <div id="subjects" class="section">
+                <h2>Manage Subjects</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Subject Name</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subjectTable">
+                        <tr><td colspan="2">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Dashboard Modal -->
+    <div id="teacherDashboard" class="dashboard hidden">
+        <div class="sidebar">
+            <h2>Teacher Panel</h2>
+            <nav class="menu">
+                <button class="menu-btn active" onclick="showTeacherSection('overview')">Dashboard</button>
+                <button class="menu-btn" onclick="showTeacherSection('create-quiz')">Create Quiz</button>
+                <button class="menu-btn" onclick="showTeacherSection('quizzes')">My Quizzes</button>
+                <button class="menu-btn" onclick="showTeacherSection('sections')">My Sections</button>
+                <button class="menu-btn" onclick="showTeacherSection('search-name')">Search by Name</button>
+                <button class="menu-btn" onclick="showTeacherSection('search-id')">Search by ID</button>
+                <button class="menu-btn" onclick="showTeacherSection('all-results')">All Results</button>
+                <button class="menu-btn logout" onclick="logout()">Logout</button>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <!-- Teacher Overview -->
+            <div id="teacher-overview" class="section active">
+                <h2>Welcome, Teacher!</h2>
+                <p>Manage your quizzes and monitor student performance.</p>
+            </div>
+
+            <!-- Create Quiz Section -->
+            <div id="teacher-create-quiz" class="section">
+                <h2>Create New Quiz</h2>
+                <div class="attempt-container">
+                    <form id="createQuizForm">
+                        <div class="form-group">
+                            <label for="teacherQuizSection">Section:</label>
+                            <select id="teacherQuizSection" required>
+                                <option value="">Select Section</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="teacherQuizSubject">Subject:</label>
+                            <select id="teacherQuizSubject" required>
+                                <option value="">Select Subject</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="teacherQuizTitle">Quiz Title:</label>
+                            <input type="text" id="teacherQuizTitle" placeholder="Enter quiz title" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="teacherNumQuestions">Number of Questions:</label>
+                            <input type="number" id="teacherNumQuestions" min="1" max="99" value="5" required>
+                        </div>
+
+                        <button type="submit" class="btn-submit">Create Quiz</button>
+                    </form>
+                    <div id="createQuizMessage" class="message"></div>
+                </div>
+            </div>
+
+            <!-- Teacher Quizzes -->
+            <div id="teacher-quizzes" class="section">
+                <h2>My Quizzes</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Quiz ID</th>
+                            <th>Title</th>
+                            <th>Subject</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quizTable">
+                        <tr><td colspan="4">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Teacher Sections -->
+            <div id="teacher-sections" class="section">
+                <h2>My Sections</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Section ID</th>
+                            <th>Name</th>
+                            <th>Course</th>
+                            <th>Students</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teacherSectionTable">
+                        <tr><td colspan="4">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Search by Student Name -->
+            <div id="teacher-search-name" class="section">
+                <h2>Search Results by Student Name</h2>
+                <div class="attempt-container">
+                    <div class="form-group">
+                        <label for="searchNameInput">Student Name:</label>
+                        <input type="text" id="searchNameInput" placeholder="Enter student name">
+                    </div>
+                    <button class="btn-submit" onclick="teacherSearchResultsByName()">Search</button>
+                </div>
+                <div id="searchNameResults" class="data-table" style="margin-top: 20px;">
+                    <p>Enter a name to search</p>
+                </div>
+            </div>
+
+            <!-- Search by Student ID -->
+            <div id="teacher-search-id" class="section">
+                <h2>Search Results by Student ID</h2>
+                <div class="attempt-container">
+                    <div class="form-group">
+                        <label for="searchIdInput">Student ID/Roll No:</label>
+                        <input type="text" id="searchIdInput" placeholder="Enter student ID or roll number">
+                    </div>
+                    <button class="btn-submit" onclick="teacherSearchResultsById()">Search</button>
+                </div>
+                <div id="searchIdResults" class="data-table" style="margin-top: 20px;">
+                    <p>Enter a student ID to search</p>
+                </div>
+            </div>
+
+            <!-- All Results -->
+            <div id="teacher-all-results" class="section">
+                <h2>All Results</h2>
+                <div style="margin-bottom: 20px;">
+                    <button class="btn-nav" onclick="teacherSortResults('id')">Sort by Student ID</button>
+                    <button class="btn-nav" onclick="teacherSortResults('name')">Sort by Student Name</button>
+                </div>
+                <div id="allResultsContainer" class="data-table">
+                    <p>Loading results...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Dashboard Modal -->
+    <div id="studentDashboard" class="dashboard hidden">
+        <div class="sidebar">
+            <h2>Student Panel</h2>
+            <nav class="menu">
+                <button class="menu-btn active" onclick="showStudentSection('profile')">View Profile</button>
+                <button class="menu-btn" onclick="showStudentSection('quizzes')">View Available Quizzes</button>
+                <button class="menu-btn" onclick="showStudentSection('attempt')">Attempt Quiz</button>
+                <button class="menu-btn" onclick="showStudentSection('scores')">View My Score</button>
+                <button class="menu-btn logout" onclick="logout()">Logout</button>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <!-- Student Profile -->
+            <div id="student-profile" class="section active">
+                <h2>My Profile</h2>
+                <div class="profile-card">
+                    <div class="profile-field">
+                        <label>Student ID:</label>
+                        <p id="profileStudentId">-</p>
+                    </div>
+                    <div class="profile-field">
+                        <label>Name:</label>
+                        <p id="profileName">-</p>
+                    </div>
+                    <div class="profile-field">
+                        <label>Email:</label>
+                        <p id="profileEmail">-</p>
+                    </div>
+                    <div class="profile-field">
+                        <label>Roll Number:</label>
+                        <p id="profileRollNo">-</p>
+                    </div>
+                    <div class="profile-field">
+                        <label>Section:</label>
+                        <p id="profileSection">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Quizzes -->
+            <div id="student-quizzes" class="section">
+                <h2>Available Quizzes for Your Section</h2>
+                <div id="quizList" class="quiz-list">
+                    <p>Loading quizzes...</p>
+                </div>
+            </div>
+
+            <!-- Attempt Quiz -->
+            <div id="student-attempt" class="section">
+                <h2>Attempt Quiz</h2>
+                <div class="attempt-container">
+                    <div class="quiz-selector">
+                        <label for="quizSelect">Select a Quiz:</label>
+                        <select id="quizSelect" onchange="onQuizSelected()">
+                            <option value="">-- Loading quizzes... --</option>
+                        </select>
+                    </div>
+                    <div id="attemptQuizInfo" style="display:none;">
+                        <div class="quiz-info-box">
+                            <h3 id="attemptQuizTitle">Quiz Title</h3>
+                            <p id="attemptQuizInfo">Click "Start Quiz" to begin your attempt.</p>
+                        </div>
+                    </div>
+                    <button type="button" id="startQuizBtn" onclick="startAttemptQuiz()" disabled style="margin-top: 20px; padding: 15px 40px; background-color: #ccc; color: #666; border: 3px solid #999; border-radius: 5px; cursor: not-allowed; font-weight: 700; font-size: 18px;">Start Quiz</button>
+                </div>
+            </div>
+
+            <!-- View My Score -->
+            <div id="student-scores" class="section">
+                <h2>My Test Scores</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Quiz Title</th>
+                            <th>Score</th>
+                            <th>Total Marks</th>
+                            <th>Percentage</th>
+                            <th>Status</th>
+                            <th>Attempt Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultTable">
+                        <tr><td colspan="6">Loading your scores...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Taking Modal -->
+    <div id="quizModal" class="modal hidden">
+        <div class="modal-content quiz-modal">
+            <button class="close-btn" onclick="closeQuizModal()">&times;</button>
+            <h2 id="quizTitle">Quiz Title</h2>
+            
+            <div class="quiz-progress">
+                <span id="questionCounter">Question 1 of 10</span>
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <form id="quizForm">
+                <!-- Single Question Container -->
+                <div id="questionContainer" class="question-container">
+                    <div id="currentQuestion" class="question-group">
+                        <h4 id="questionText">Question text here</h4>
+                        <div id="optionsContainer" class="options-container">
+                            <!-- Options will be dynamically generated -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="quiz-navigation">
+                    <button type="button" class="btn-nav" id="prevBtn" onclick="previousQuestion()" style="display:none;">
+                        &larr; Previous Question
+                    </button>
+                    
+                    <button type="button" class="btn-nav" id="nextBtn" onclick="nextQuestion()" style="display:none;">
+                        Next Question &rarr;
+                    </button>
+                    
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        Submit Quiz
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Score Results Modal -->
+    <div id="scoreModal" class="modal hidden">
+        <div class="modal-content score-modal">
+            <div class="score-result-box">
+                <h2>Quiz Submitted Successfully!</h2>
+                <div class="score-display">
+                    <div class="score-circle">
+                        <span id="scorePercentage">0%</span>
+                    </div>
+                </div>
+                <div class="score-details">
+                    <p><strong>Your Score:</strong> <span id="scoreValue">0</span> / <span id="totalMarksValue">0</span></p>
+                    <p><strong>Percentage:</strong> <span id="percentageValue">0</span>%</p>
+                    <p id="statusMessage" class="status-msg">Status will appear here</p>
+                </div>
+                <button class="btn-close-score" onclick="closeScoreModal()">View Results</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

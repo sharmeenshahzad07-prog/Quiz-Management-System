@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - Examination System</title>
+    <link rel="stylesheet" href="css/teacher.css">
+    <script>
+        // Quick client-side guard: if user isn't a logged-in teacher, redirect to main login (`index.html`).
+        (function(){
+            try {
+                var role = localStorage.getItem('role');
+                if (!role || role !== 'TEACHER') {
+                    window.location.href = 'index.html';
+                }
+            } catch (e) {
+                // If localStorage is unavailable, redirect to index
+                try { window.location.href = 'index.html'; } catch(e){}
+            }
+        })();
+    </script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Teacher Panel</h2>
+                <p id="teacherName" class="teacher-name"></p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="#" onclick="showSection('profile', event)" class="nav-link active">👤 View Profile</a></li>
+                    <li><a href="#" onclick="showSection('create-quiz', event)" class="nav-link">➕ Create Quiz</a></li>
+                    <li><a href="#" onclick="showSection('my-quizzes', event)" class="nav-link">📋 View My Quizzes</a></li>
+                    <li><a href="#" onclick="showSection('search-by-name', event)" class="nav-link">🔍 Search by Student Name</a></li>
+                    <li><a href="#" onclick="showSection('search-by-id', event)" class="nav-link">🔎 Search by Student ID</a></li>
+                    <li><a href="#" onclick="showSection('all-results', event)" class="nav-link">📊 View All Results</a></li>
+                    <li><a href="#" onclick="logout(event)" class="nav-link logout">🚪 Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- View Profile Section -->
+            <section id="profile" class="content-section active">
+                <h2>👤 My Profile</h2>
+                <div class="profile-container">
+                    <div class="profile-info" id="profileInfo">
+                        <p>Loading profile...</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="showEditProfile()">✏️ Edit Profile</button>
+                </div>
+
+                <!-- Edit Profile Modal -->
+                <div id="editProfileModal" class="modal hidden">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeEditProfile()">&times;</span>
+                        <h3>Edit Profile</h3>
+                        <form id="editProfileForm">
+                            <div class="form-group">
+                                <label>Name:</label>
+                                <input type="text" id="editName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email:</label>
+                                <input type="email" id="editEmail" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Create Quiz Section -->
+            <section id="create-quiz" class="content-section">
+                <h2>➕ Create New Quiz</h2>
+                <form id="createQuizForm" class="form-container">
+                    <div class="form-group">
+                        <label for="quizSection">Section:</label>
+                        <select id="quizSection" required>
+                            <option value="">Select Section</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quizSubject">Subject:</label>
+                        <select id="quizSubject" required>
+                            <option value="">Select Subject</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quizTitle">Quiz Title:</label>
+                        <input type="text" id="quizTitle" placeholder="Enter quiz title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="numQuestions">Number of Questions:</label>
+                        <input type="number" id="numQuestions" min="1" max="99" value="5" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Create Quiz</button>
+                </form>
+                <div id="createQuizMessage" class="message"></div>
+            </section>
+
+            <!-- My Quizzes Section -->
+            <section id="my-quizzes" class="content-section">
+                <h2>📋 My Quizzes</h2>
+                <div id="quizzesContainer" class="quizzes-container">
+                    <p>Loading quizzes...</p>
+                </div>
+            </section>
+
+            <!-- Search by Student Name -->
+            <section id="search-by-name" class="content-section">
+                <h2>🔍 Search Results by Student Name</h2>
+                <div class="search-container">
+                    <input type="text" id="searchNameInput" placeholder="Enter student name" class="search-input">
+                    <button class="btn btn-primary" onclick="searchResultsByName()">Search</button>
+                </div>
+                <div id="searchNameResults" class="results-container">
+                    <p>Enter a name to search</p>
+                </div>
+            </section>
+
+            <!-- Search by Student ID -->
+            <section id="search-by-id" class="content-section">
+                <h2>🔎 Search Results by Student ID</h2>
+                <div class="search-container">
+                    <input type="text" id="searchIdInput" placeholder="Enter student ID/Roll No" class="search-input">
+                    <button class="btn btn-primary" onclick="searchResultsById()">Search</button>
+                </div>
+                <div id="searchIdResults" class="results-container">
+                    <p>Enter a student ID to search</p>
+                </div>
+            </section>
+
+            <!-- All Results Section -->
+            <section id="all-results" class="content-section">
+                <h2>📊 All Results</h2>
+                <div class="sort-controls">
+                    <button class="btn btn-secondary" onclick="sortResults('id')">Sort by Student ID</button>
+                    <button class="btn btn-secondary" onclick="sortResults('name')">Sort by Student Name</button>
+                </div>
+                <div id="allResultsContainer" class="results-container">
+                    <p>Loading results...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Set up API base URL before loading other scripts
+        window.API_BASE_URL = 'http://localhost:8080/api';
+    </script>
+    <script src="js/teacher.js"></script>
+</body>
+</html>
